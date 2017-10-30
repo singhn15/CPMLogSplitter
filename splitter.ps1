@@ -1,16 +1,20 @@
+####################################################################################################
+# Be sure to run this script from the same directory you as the log files
+# Be sure to manually add "split_this_" in front of the logs you want to split
+# so that the script doesn't try to modify active CPM  log files
+####################################################################################################
+
 $linecount = 0
 $filenumber = 1
-
-#Make sure to add "split_this_" in front of the error logs
 
 $folder = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
 $PMlogFile = Get-ChildItem $folder -Filter "split_this_pm*.log" | Where-Object {$_.Name -notlike "*error*"} | % {$_.Name}
 $PMErrorlogFile = Get-ChildItem $folder -Filter "split_this_pm_error*.log" | Where-Object {$_.Name -like "*error*"} | % {$_.Name}
-$destinationPath = "C:\Users\singhn15\Desktop\test\logSplits"
+$destinationPath = "$folder\logSplits"
 
 # Number of lines to split by
-[int]$splitLines=15000
+[int]$splitLines=30000
 
 Function PMSplit($logFile, $destination, $splitLines){
                 $valid = Test-Path $destination
@@ -34,6 +38,7 @@ Function PMSplit($logFile, $destination, $splitLines){
 }
 
 Function PMErrorSplit($logFile, $destination, $splitLines){
+                $splitLineErr=$splitLines/2
                 $valid = Test-Path $destination
                 If ($valid -eq $False){
                                 New-Item $destination -type Directory
@@ -46,7 +51,7 @@ Function PMErrorSplit($logFile, $destination, $splitLines){
                 
                 Add-Content $destination\$filebasename`_part$filenumber.log "$_"
                 $linecount ++
-                                If ($linecount -eq $splitLines) {
+                                If ($linecount -eq $splitLinesErr) {
                                                 $filenumber++
                                                 $linecount = 0
                                                 Write-Host "Writing part: $destinationPath\$filebasename`_part$filenumber.log"
